@@ -63,7 +63,6 @@ class UnionPaginator
 
         $paginated = DB::table(DB::raw("({$this->unionQuery->toSql()}) as subquery"))
             ->mergeBindings($this->unionQuery)
-            ->orderBy('created_at', 'DESC')
             ->paginate($perPage, $columns, $pageName, $page);
 
         $paginated->through(function ($record) {

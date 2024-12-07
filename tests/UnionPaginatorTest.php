@@ -60,17 +60,12 @@ class UnionPaginatorTest extends TestCase
 
         $result = $paginator->transform(UserModel::class, fn($record) => ['foo' => 'test'])->paginate();
 
-        $this->assertEquals(
-            [
-                ['foo' => 'test'],
-                ['foo' => 'test'],
-                ['foo' => 'test'],
-                PostModel::find(1),
-                PostModel::find(2),
-                PostModel::find(3),
-            ],
-            $result->items()
-        );
+        $this->assertEquals(PostModel::find(1), $result->items()[0]);
+        $this->assertEquals(['foo' => 'test'], $result->items()[1]);
+        $this->assertEquals(PostModel::find(2), $result->items()[2]);
+        $this->assertEquals(['foo' => 'test'], $result->items()[3]);
+        $this->assertEquals(PostModel::find(3), $result->items()[4]);
+        $this->assertEquals(['foo' => 'test'], $result->items()[5]);
     }
 
     public function test_soft_deletes_filters_out_soft_deleted_records(): void
@@ -207,12 +202,12 @@ class UnionPaginatorTest extends TestCase
         $this->assertEquals(6, $result->total());
         $this->assertEquals(
             [
+                PostModel::find(1),
                 UserModel::find(1),
+                PostModel::find(2),
                 UserModel::find(2),
                 UserModel::find(3),
                 UserModel::find(4),
-                PostModel::find(1),
-                PostModel::find(2),
             ],
             $result->items()
         );
@@ -257,13 +252,12 @@ class UnionPaginatorTest extends TestCase
 
         $items = $result->items();
 
-        $this->assertNull($items[0]);
+        $this->assertInstanceOf(PostModel::class, $items[0]);
         $this->assertNull($items[1]);
-        $this->assertNull($items[2]);
-
-        $this->assertInstanceOf(PostModel::class, $items[3]);
+        $this->assertInstanceOf(PostModel::class, $items[2]);
+        $this->assertNull($items[3]);
         $this->assertInstanceOf(PostModel::class, $items[4]);
-        $this->assertInstanceOf(PostModel::class, $items[5]);
+        $this->assertNull($items[5]);
     }
 
     public function test_multiple_transforms_on_same_model(): void
@@ -349,7 +343,7 @@ class UnionPaginatorTest extends TestCase
             ))
             ->create(['created_at' => now()->subMinutes(5)]);
 
-        $items = $paginator->paginate()->items();
+        $items = $paginator->latest()->paginate()->items();
 
         $this->assertCount(6, $items);
 

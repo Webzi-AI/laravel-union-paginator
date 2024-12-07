@@ -1,0 +1,71 @@
+{
+    "name": "austinw/laravel-union-paginator",
+    "description": "Combines data from multiple models into a single unified query using SQL unions, allowing for consistent pagination and customization across diverse data sources.",
+    "keywords": [
+        "austinw",
+        "laravel-union-paginator",
+        "pagination",
+        "union",
+        "multiple"
+    ],
+    "homepage": "https://github.com/austinw/laravel-union-paginator",
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/austinw/laravel-union-paginator/issues",
+        "source": "https://github.com/austinw/laravel-union-paginator"
+    },
+    "authors": [
+        {
+            "name": "Austin White",
+            "email": "austingym@gmail.com",
+            "homepage": "https://austinw.dev",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/contracts": "^10.0|^11.0",
+        "illuminate/database": "^10.0|^11.0",
+        "illuminate/support": "^10.0|^11.0"
+    },
+    "require-dev": {
+        "ext-json": "*",
+        "larastan/larastan": "^2.9",
+        "mockery/mockery": "^1.4",
+        "orchestra/testbench": "^7.0|^8.0",
+        "pestphp/pest": "^2.0",
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "AustinW\\UnionPaginator\\": "src",
+            "AustinW\\UnionPaginator\\Database\\Factories\\": "database/factories"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AustinW\\UnionPaginator\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "test-coverage": "phpunit --coverage-html coverage",
+        "analyse": "vendor/bin/phpstan analyse --ansi --memory-limit=4G",
+        "baseline": "vendor/bin/phpstan analyse --generate-baseline --memory-limit=4G"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "AustinW\\UnionPaginator\\UnionPaginatorServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

@@ -17,7 +17,7 @@ The `UnionPaginator` package enables you to paginate and unify results from mult
 Install via Composer:
 
 ```bash
-composer require austinw/union-paginator
+composer require austinw/laravel-union-paginator
 ```
 
 ## Migration Guide

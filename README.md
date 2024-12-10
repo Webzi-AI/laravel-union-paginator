@@ -1,178 +1,176 @@
+
 # UnionPaginator Documentation
 
 ## Introduction
 
-The `UnionPaginator` package provides a powerful and flexible way to paginate across multiple Eloquent models in Laravel. By uniting queries from different models into a single dataset, it allows you to paginate and sort data from multiple sources seamlessly.
+The `UnionPaginator` package enables you to paginate and unify results from multiple Eloquent models into a single dataset. By merging multiple model queries, it allows for straightforward pagination and sorting of data drawn from various sources.
+
+**Key Features:**
+- Unite and paginate multiple Eloquent model results in one go.
+- Apply per-model filters (scopes) before the union.
+- Choose between retrieving actual Eloquent models or working with raw database records.
+- Mitigate N+1 queries by loading models in bulk.
+- Customize selected columns for each model type.
 
 ## Installation
 
-Install the package via Composer:
+Install via Composer:
 
 ```bash
 composer require austinw/union-paginator
 ```
 
+## Migration Guide
+
+If you are upgrading from an earlier version of `UnionPaginator`, please refer to the [Migration Guide](MIGRATION.md) for detailed instructions on updating your code to take advantage of the latest features and improvements.
+
 ## Getting Started
 
-### Creating a UnionPaginator Instance
+### Initializing the UnionPaginator
 
-The `UnionPaginator` is initialized with an array of model classes that you want to paginate. These models must extend `Illuminate\Database\Eloquent\Model`.
+Specify which Eloquent models you want to combine:
 
 ```php
 use AustinW\UnionPaginator\UnionPaginator;
 
-$paginator = new UnionPaginator([User::class, Post::class]);
+$paginator = UnionPaginator::forModels([User::class, Post::class]);
 ```
 
-Alternatively, use the static `for` method:
+All provided classes must be subclasses of `Illuminate\Database\Eloquent\Model`.
+
+### Paginating Data
+
+Call `paginate` to get paginated results:
 
 ```php
-$paginator = UnionPaginator::for([User::class, Post::class]);
+$results = $paginator->paginate(15);
 ```
 
-### Paginating Results
+This returns a `LengthAwarePaginator` instance, seamlessly integrating with Laravel’s pagination utilities.
 
-To paginate the unified results, use the `paginate` method:
+### Applying Scopes to Individual Models
+
+You can apply specific query conditions to a single model type before creating the union:
 
 ```php
-$result = $paginator->paginate(15); // Paginate with 15 items per page
+$paginator->applyScope(User::class, fn($query) => $query->where('active', true));
 ```
 
-This returns a `LengthAwarePaginator` instance.
+Now only active users are included in the final union.
 
-### Transforming Records
+### Transforming Results
 
-You can apply transformations to records of specific models using the `transform` method. This is useful for customizing the output format of certain models.
+Use `transformResultsFor` to alter records for a particular model type:
 
 ```php
-$paginator->transform(User::class, function ($record) {
-    return [
-        'id' => $record->id,
-        'type' => 'user',
-    ];
-});
+$paginator->transformResultsFor(User::class, fn($user) => [
+    'id' => $user->id,
+    'uppercase_name' => strtoupper($user->name),
+]);
+```
+
+If model retrieval is active, `$user` is an Eloquent model. If you call `preventModelRetrieval()`, `$user` is a raw database record (`stdClass`).
+
+### Preventing Model Retrieval
+
+If you don’t need Eloquent models and prefer raw records:
+
+```php
+$paginator->preventModelRetrieval()->paginate();
+```
+
+Transformations still apply, but are run on raw records.
+
+### Selecting Columns
+
+Choose specific columns for each model type to reduce overhead:
+
+```php
+$paginator->setSelectedColumns(User::class, ['id', 'email', DB::raw("'User' as type")]);
 ```
 
 ### Soft Deletes
 
-If any of the models use the `SoftDeletes` trait, `UnionPaginator` automatically excludes soft-deleted records from the results.
+Models using `SoftDeletes` are automatically filtered so that soft-deleted records do not appear.
 
 ## Methods
 
-### `__construct(array $modelTypes)`
+- **forModels(array $modelTypes): self**  
+  Set the models to combine. Throws an exception if a non-model class is provided.
 
-Initializes the paginator with an array of model classes.
+- **applyScope(string \$modelType, Closure $callable): self**  
+  Modify queries for an individual model type.
 
-- **Parameters:**
-    - `array $modelTypes`: List of model class names to include in the union query.
-- **Exceptions:**
-    - Throws `BadMethodCallException` if any class in the array does not extend `Model`.
+- **transformResultsFor(string \$modelType, Closure $callable): self**  
+  Apply transformations to either models or raw records of a particular model type.
 
-### `paginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null)`
+- **preventModelRetrieval(): self**  
+  Skip loading actual models. Return raw database rows instead.
 
-Paginates the results of the union query.
+- **setSelectedColumns(string \$modelType, array $columns): self**  
+  Specify which columns to fetch for each model type.
 
-- **Parameters:**
-    - `$perPage`: Number of results per page (default: `15`).
-    - `$columns`: Columns to select (default: `['*']`).
-    - `$pageName`: Name of the query string parameter for the page (default: `'page'`).
-    - `$page`: Current page number (optional).
-- **Returns:** A `LengthAwarePaginator` instance.
+- **paginate(\$perPage = 15, \$columns = ['*'], \$pageName = 'page', $page = null): LengthAwarePaginator**  
+  Execute the union query, apply scopes and transformations, and return a paginator.
 
-### `transform(string $modelType, Closure $callable): self`
-
-Applies a transformation to the records of a specific model type.
-
-- **Parameters:**
-    - `$modelType`: The model class name to transform.
-    - `$callable`: A `Closure` that accepts a record and returns the transformed value.
-- **Returns:** The `UnionPaginator` instance for method chaining.
-
-### `getModelTypes(): array`
-
-Retrieves the list of model types used in the union query.
-
-- **Returns:** An array of model class names.
-
-### `setModelTypes(array $modelTypes): self`
-
-Updates the list of model types for the paginator.
-
-- **Parameters:**
-    - `$modelTypes`: The new list of model types.
-- **Returns:** The `UnionPaginator` instance for method chaining.
-
-### `__call($method, $parameters)`
-
-Forwards method calls to the underlying union query, allowing dynamic query customization.
-
-- **Parameters:**
-    - `$method`: The method name to call on the union query.
-    - `$parameters`: The parameters for the method.
-- **Throws:** `BadMethodCallException` if no union query is defined.
-
-## Advanced Features
-
-### Handling Complex Unions
-
-The `UnionPaginator` ensures proper binding of parameters in complex union queries, maintaining database compatibility and performance.
-
-### Ordering Results
-
-By default, results are ordered by `created_at` in descending order. Use query methods like `orderBy` or `latest` to customize sorting:
-
-```php
-$paginator->latest()->paginate();
-```
-
-### Combining Transformations
-
-Apply multiple transformations to the same model type. The latest transformation overrides previous ones:
-
-```php
-$paginator->transform(User::class, fn($record) => ['transformed' => true])
-          ->transform(User::class, fn($record) => ['overridden' => true]);
-```
-
-### Handling Empty Result Sets
-
-The paginator gracefully handles empty results, returning a paginator with zero total items.
-
-## Testing
-
-The package includes extensive test coverage, ensuring reliability in various scenarios, such as:
-
-- Pagination with large datasets.
-- Handling of soft-deleted records.
-- Transforming and overriding transformations.
-- Boundary conditions and invalid input.
+- **__call(\$method, $parameters)**  
+  Forward method calls to the underlying union query builder, enabling sorting and other query modifications.
 
 ## Example Usage
 
 ```php
 use AustinW\UnionPaginator\UnionPaginator;
 
-// Define the models
-$paginator = UnionPaginator::for([User::class, Post::class]);
+$paginator = UnionPaginator::forModels([User::class, Post::class])
+    ->applyScope(User::class, fn($query) => $query->where('active', true))
+    ->transformResultsFor(User::class, fn($user) => ['id' => $user->id, 'name' => strtoupper($user->name)])
+    ->transformResultsFor(Post::class, fn($post) => ['title' => $post->title, 'date' => $post->created_at->toDateString()])
+    ->paginate(10);
 
-// Apply transformations
-$paginator->transform(User::class, fn($record) => [
-    'id' => $record->id,
-    'name' => $record->name,
-])->transform(Post::class, fn($record) => [
-    'title' => $record->title,
-    'created_at' => $record->created_at,
-]);
-
-// Paginate the results
-$paginatedResults = $paginator->paginate(10);
-
-// Iterate through paginated items
-foreach ($paginatedResults->items() as $item) {
-    // Process the paginated item
+foreach ($paginator->items() as $item) {
+    // Each $item could be a transformed array or a raw record, depending on your configuration.
 }
 ```
 
+## Advanced Usage
+
+### Ordering and Complex Queries
+
+You can chain Eloquent methods before `paginate()`:
+
+```php
+$paginator->latest()->paginate();
+```
+
+or
+
+```php
+$paginator->orderBy('created_at', 'desc')->paginate();
+```
+
+### Multiple Transformations for the Same Model
+
+Applying multiple transformations for the same model type overwrites earlier ones:
+
+```php
+$paginator->transformResultsFor(User::class, fn($user) => ['transformed' => true])
+          ->transformResultsFor(User::class, fn($user) => ['overridden' => true]);
+```
+
+The latter transformation takes precedence.
+
+### Handling Empty Results
+
+If no matching records are found, the paginator returns an empty result set without errors.
+
+## Testing
+
+`UnionPaginator` is well-tested across various scenarios, including:
+- Multiple model unions.
+- Soft deletes handling.
+- Both raw and model-based transformations.
+- Large datasets and edge cases.
+
 ## Conclusion
 
-`UnionPaginator` is a robust solution for unified pagination across multiple models, combining simplicity with extensibility. Its seamless integration with Laravel’s query builder and pagination makes it a must-have for complex applications.
+`UnionPaginator` simplifies managing unified pagination across multiple Eloquent models. With features like scope application, bulk model loading, customizable transformations, and raw record retrieval, it offers a flexible and efficient tool that fits smoothly into Laravel’s ecosystem.

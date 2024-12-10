@@ -25,7 +25,7 @@ class UserModel extends Model
 
     public function comments(): HasMany
     {
-        return $this->hasMany(CommentModel::class);
+        return $this->hasMany(CommentModel::class, 'user_id');
     }
 
     public function isVerified(): Attribute

@@ -136,7 +136,7 @@ class UnionPaginator
             $query = $model->newQuery()->select($columns);
 
             if ($this->hasScope($modelType)) {
-                foreach ($this->addFilterFor($modelType) as $modelScope) {
+                foreach ($this->getScopesFor($modelType) as $modelScope) {
                     $modelScope($query);
                 }
             }
@@ -322,12 +322,12 @@ class UnionPaginator
     }
 
     /**
-     * Get filters for a specific model type.
+     * Get scopes for a specific model type.
      *
      * @param string $modelType
      * @return Collection
      */
-    public function addFilterFor(string $modelType): Collection
+    public function getScopesFor(string $modelType): Collection
     {
         return collect($this->scopes)->filter(fn ($scope) => $scope[0] === $modelType)->map(fn ($scope) => $scope[1]);
     }

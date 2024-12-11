@@ -1,5 +1,45 @@
 # Migration Guide
 
+## Version 2.1.1 to 2.2.0
+
+To migrate from version 2.1.1 to 2.2.1 of the `UnionPaginator`, you need to make a small adjustment due to a method name change. Here's a concise guide:
+
+### Changes
+
+1. **Method Name Update:**
+   - The method `addFilterFor` has been renamed to `getScopesFor`. Update any usage of this method in your codebase.
+
+   **Before:**
+   ```php
+   foreach ($this->addFilterFor($modelType) as $modelScope) {
+       $modelScope($query);
+   }
+   ```
+
+**After:**
+   ```php
+   foreach ($this->getScopesFor($modelType) as $modelScope) {
+       $modelScope($query);
+   }
+   ```
+
+2. **Update Method Definition:**
+   - Change the method definition in your `UnionPaginator` class.
+
+   **Before:**
+   ```php
+   public function addFilterFor(string $modelType): Collection
+   ```
+
+   **After:**
+   ```php
+   public function getScopesFor(string $modelType): Collection
+   ```
+
+This change is primarily a correction for better naming clarity and should be straightforward to implement.
+
+## Version 1 to Version 2
+
 This guide will help you update from the original `UnionPaginator` class to the newer version with improved functionality and developer experience.
 
 ## Overview of Changes

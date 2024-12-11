@@ -56,7 +56,44 @@ You can apply specific query conditions to a single model type before creating t
 $paginator->applyScope(User::class, fn($query) => $query->where('active', true));
 ```
 
+### Customizing Mass Model Retrieval
+The UnionPaginator class allows you to customize how models are retrieved during pagination. This can be useful if you need to apply specific logic or optimizations when fetching models from the database.
+
+#### Registering a Custom Retrieval Callback
+You can register a custom callback for retrieving models by type using the fetchModelsUsing method. This method allows you to define how models should be fetched for a specific model type.
+
 Now only active users are included in the final union.
+
+```php
+use AustinW\UnionPaginator\UnionPaginator;
+use App\Models\Post;
+use App\Models\Comment;
+
+// Create a new UnionPaginator instance for the specified models
+$paginator = new UnionPaginator([Post::class, Comment::class]);
+
+// Register a custom retrieval callback for the Post model
+$paginator->fetchModelsUsing(Post::class, function (array $ids) {
+    // Custom logic to retrieve Post models
+    return Post::with('author')->findMany($ids);
+});
+
+// Register a custom retrieval callback for the Comment model
+$paginator->fetchModelsUsing(Comment::class, function (array $ids) {
+    // Custom logic to retrieve Comment models
+    return Comment::with('post')->findMany($ids);
+});
+
+// Use the paginator as usual
+$paginatedResults = $paginator->paginate();
+```
+
+#### Important Considerations
+- Model Type Registration: Ensure that the model type you are registering a callback for has been added to the UnionPaginator instance using the constructor or addModelType method.
+- Callback Signature: The callback should accept an array of IDs and return a collection of models. You can use Eloquent's findMany method or any other custom logic to retrieve the models.
+- Default Behavior: If no custom callback is registered for a model type, the UnionPaginator will use the default retrieval logic, which is to call findMany on the model type.
+
+By using custom retrieval callbacks, you can optimize and tailor the model fetching process to suit your application's specific needs.
 
 ### Transforming Results
 

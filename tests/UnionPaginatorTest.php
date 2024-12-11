@@ -489,7 +489,15 @@ class UnionPaginatorTest extends TestCase
     {
         $paginator = new UnionPaginator([UserModel::class, PostModel::class]);
 
-        UserModel::factory()->count(5)->create();
+        UserModel::factory()
+            ->count(3)
+            ->state(new Sequence(
+                ['name' => 'Anna', 'created_at' => now()->subHour()],
+                ['name' => 'Aaron'],
+                ['name' => 'Bob'],
+                ['name' => 'Charlie']
+            ))
+            ->create();
 
         // Scope 1: Only users with 'a' in their name
         $paginator->applyScope(UserModel::class, fn($query) => $query->where('name', 'like', '%a%'));
@@ -498,6 +506,8 @@ class UnionPaginatorTest extends TestCase
         $paginator->applyScope(UserModel::class, fn($query) => $query->where('created_at', '>', now()->subHour()));
 
         $result = $paginator->paginate();
+
+        $this->assertCount(1, $result->items());
 
         // We can assert the filtered set size, or other conditions
         // For simplicity, let's ensure that the returned items pass the conditions.
@@ -526,7 +536,7 @@ class UnionPaginatorTest extends TestCase
 
     public function test_prevent_model_retrieval_returns_raw_records()
     {
-        PostModel::factory()->count(2)->create();
+        $posts = PostModel::factory()->count(2)->create();
 
         // Paginate with preventModelRetrieval enabled
         $paginator = UnionPaginator::forModels([UserModel::class, PostModel::class])
@@ -536,7 +546,7 @@ class UnionPaginatorTest extends TestCase
         $items = $paginator->items();
         $this->assertCount(4, $items);
 
-        // Ensure items are raw stdClass records, not Eloquent models
+        // Ensure the items are raw records
         foreach ($items as $item) {
             $this->assertInstanceOf(stdClass::class, $item);
             $this->assertTrue(property_exists($item, 'id'));

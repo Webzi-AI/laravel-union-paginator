@@ -1,6 +1,6 @@
 <?php
 
-namespace AustinW\UnionPaginator\database\factories;
+namespace AustinW\UnionPaginator\Database\Factories;
 
 use AustinW\UnionPaginator\Tests\TestClasses\Models\UserModel;
 use Illuminate\Database\Eloquent\Factories\Factory;

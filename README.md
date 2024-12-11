@@ -1,6 +1,12 @@
 
 # UnionPaginator Documentation
 
+[![Tests](https://github.com/AustinW/laravel-union-paginator/actions/workflows/run-tests.yml/badge.svg)](https://github.com/AustinW/laravel-union-paginator/actions/workflows/run-tests.yml)
+[![Linter](https://github.com/AustinW/laravel-union-paginator/actions/workflows/run-linter.yml/badge.svg)](https://github.com/AustinW/laravel-union-paginator/actions/workflows/run-linter.yml)
+<a href="https://packagist.org/packages/austinw/laravel-union-paginator"><img src="https://img.shields.io/packagist/dt/austinw/laravel-union-paginator" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/austinw/laravel-union-paginator" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/austinw/laravel-union-paginator"><img src="https://img.shields.io/packagist/l/austinw/laravel-union-paginator" alt="License"></a>
+
 ## Introduction
 
 The `UnionPaginator` package enables you to paginate and unify results from multiple Eloquent models into a single dataset. By merging multiple model queries, it allows for straightforward pagination and sorting of data drawn from various sources.

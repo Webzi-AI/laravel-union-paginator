@@ -427,11 +427,17 @@ class UnionPaginator
      */
     protected function defaultColumns(Model $model): array
     {
+        $className = $model::class;
+
+        if (DB::getDriverName() !== 'sqlite') {
+            $className = addslashes($className);
+        }
+
         return [
             $model->getKeyName(),
             'created_at',
             'updated_at',
-            DB::raw(sprintf("'%s' as type", $model::class))
+            DB::raw(sprintf("'%s' as type", $className))
         ];
     }
 

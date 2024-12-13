@@ -155,11 +155,9 @@ Now the queries are built using Eloquent builders, and user models are filtered 
 
 ## Summary
 
-This migration provides a more fluent, Laravel-friendly experience. You gain:
+This migration provides a more fluent experience. You gain:
 - More explicit method names. 
 - The ability to scope queries per model. 
-- Performance improvements by mass-loading models. 
+- Performance improvements by mass-loading models and avoiding N+1 queries. 
 - Flexibility to opt-in or out of model retrieval. 
 - Cleaner transformations and error handling.
-
-Following the steps above and updating your code where necessary will ensure a smooth transition to the new `UnionPaginator`.

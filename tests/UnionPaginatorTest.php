@@ -620,4 +620,32 @@ class UnionPaginatorTest extends TestCase
             $this->assertStringNotContainsString('from "post_models" where "post_models"."id" in', $sql);
         }
     }
+
+    public function test_fetch_models_using_retains_loaded_models()
+    {
+        // When using the `fetchModelsUsing` method, the paginator should assume that models have already been retrieved
+        // and use those models directly instead of querying the database again.
+
+        // We can test this by creating a user model with many posts and then paginating over the user model.
+        // We will then use the `fetchModelsUsing` method to provide the user model and its posts to the paginator.
+
+        UserModel::factory()
+            ->has(PostModel::factory()->count(3), 'posts')
+            ->create();
+
+        $this->assertEquals(1, UserModel::count());
+        $this->assertEquals(3, PostModel::count());
+
+        $paginator = UnionPaginator::forModels([UserModel::class]);
+
+        $paginator->fetchModelsUsing(UserModel::class, function (array $records) {
+            return UserModel::with('posts')->findMany($records);
+        });
+
+        $items = $paginator->paginate()->items();
+
+        // We expect that posts has already been loaded on the model
+        $this->assertTrue($items[0]->relationLoaded('posts'));
+        $this->assertCount(3, $items[0]->posts);
+    }
 }

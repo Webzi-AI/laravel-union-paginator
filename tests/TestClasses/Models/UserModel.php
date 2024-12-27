@@ -20,7 +20,7 @@ class UserModel extends Model
 
     public function posts(): HasMany
     {
-        return $this->hasMany(PostModel::class);
+        return $this->hasMany(PostModel::class, 'user_id');
     }
 
     public function comments(): HasMany

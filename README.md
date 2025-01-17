@@ -213,7 +213,3 @@ If no matching records are found, the paginator returns an empty result set with
 - Soft deletes handling.
 - Both raw and model-based transformations.
 - Large datasets and edge cases.
-
-## Conclusion
-
-`UnionPaginator` simplifies managing unified pagination across multiple Eloquent models. With features like scope application, bulk model loading, customizable transformations, and raw record retrieval, it offers a flexible and efficient tool that fits smoothly into Laravel’s ecosystem.
